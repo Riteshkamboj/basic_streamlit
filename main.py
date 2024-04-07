@@ -1,36 +1,24 @@
 import cv2
 import streamlit as st
-import numpy as np
 
-st.title("Webcam and Image Processing")
+st.title("Webcam Live Feed")
 
-
-run_webcam = st.checkbox("Run Webcam")
+run = st.checkbox("Run")
 FRAME_WINDOW = st.image([])
 
-uploaded_file = st.file_uploader("Choose an Image", type=["jpg", "png", "jpeg"])
-image_container = st.empty()
+camera = cv2.VideoCapture(0)  # 0 is the default webcam
 
-camera = cv2.VideoCapture(0)
-
-def process_image(image):
-  if image.ndim == 3 and image.shape[2] == 3:
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-  return image
-
-while run_webcam:
+while run:
   _, frame = camera.read()
-  frame = process_image(frame)
+  frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert for Streamlit
+  # Flip the frame horizontally
+  frame = cv2.flip(frame, 1)  # 1 for horizontal flip
   FRAME_WINDOW.image(frame)
-
+  
+  # Slow down frame update for better performance
   key = cv2.waitKey(1) & 0xFF
   if key == ord("q"):
     break
 
 camera.release()
 cv2.destroyAllWindows()
-
-if uploaded_file is not None:
-  image = cv2.imdecode(np.fromstring(uploaded_file.read(), np.uint8), cv2.IMREAD_COLOR)
-  image = process_image(image)
-  image_container.image(image, caption="Uploaded Image")
